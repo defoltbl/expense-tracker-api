@@ -22,7 +22,7 @@ object DatabaseFactory {
         Database.connect(dataSource)
 
         transaction {
-            SchemaUtils.create(ExpensesTable)
+            SchemaUtils.create(ExpensesTable, UsersTable)
         }
     }
 }

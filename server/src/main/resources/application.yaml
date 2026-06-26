@@ -4,4 +4,5 @@ ktor:
   application:
     modules:
       - com.andrii.SerializationKt.configureSerialization
+      - com.andrii.RoutingKt.configureAuthentication
       - com.andrii.RoutingKt.configureRouting
