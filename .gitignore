@@ -19,6 +19,9 @@ out/
 # Logs
 *.log
 
-# Environment / secrets (important for later phases)
+# Environment / secrets
 .env
 *.env.local
+
+# Kotlin/JS tooling
+kotlin-js-store/

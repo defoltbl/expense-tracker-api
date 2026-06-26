@@ -6,6 +6,7 @@ postgresql = "42.7.7"
 hikaricp = "5.1.0"
 javajwt = "4.5.0"
 bcrypt = "0.10.2"
+shadow = "8.3.6"
 
 [libraries]
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
@@ -21,3 +22,4 @@ bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

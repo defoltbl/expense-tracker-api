@@ -9,11 +9,15 @@ import org.jetbrains.exposed.sql.transactions.transaction
 object DatabaseFactory {
 
     fun init() {
+        val jdbcUrl = System.getenv("DATABASE_URL") ?: "jdbc:postgresql://localhost:5433/expensetracker"
+        val dbUser = System.getenv("DATABASE_USER") ?: "postgres"
+        val dbPassword = System.getenv("DATABASE_PASSWORD") ?: "postgres"
+
         val config = HikariConfig().apply {
-            jdbcUrl = "jdbc:postgresql://localhost:5433/expensetracker"
+            this.jdbcUrl = jdbcUrl
             driverClassName = "org.postgresql.Driver"
-            username = "postgres"
-            password = "postgres"
+            username = dbUser
+            password = dbPassword
             maximumPoolSize = 5
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
