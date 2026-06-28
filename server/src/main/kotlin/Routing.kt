@@ -48,6 +48,17 @@ fun Application.configureAuthentication() {
 
 fun Application.configureRouting() {
     routing {
+
+        get("/") {
+            call.respond(
+                mapOf(
+                    "status" to "ok",
+                    "service" to "Expense Tracker API",
+                    "docs" to "https://github.com/defoltbl/expense-tracker-api"
+                )
+            )
+        }
+
         rateLimit(RateLimitName("auth")) {
             // Public route — no token required
             post("/login") {
