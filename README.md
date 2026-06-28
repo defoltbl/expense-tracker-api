@@ -8,7 +8,7 @@
 
 A REST API for tracking personal expenses, built with Kotlin and Ktor, featuring JWT authentication, per-user data isolation, and full Docker + Azure cloud deployment.
 
-**Live demo:** https://expense-tracker-api-andrii.azurewebsites.net
+**Live demo:** https://expense-tracker-api-andrii.azurewebsites.net (visiting it returns a small JSON status response, since this is a backend-only API with no UI – see below for actual usable endpoints)
 
 > Note: the live demo runs on a paid Azure tier and may be stopped between active development periods to manage cloud costs. If the link is unresponsive, the project can be run locally – see [Running locally](#running-locally) below.
 
@@ -88,6 +88,7 @@ PostgreSQL (Azure Database for PostgreSQL Flexible Server)
 
 | Method | Endpoint | Auth required | Description |
 |---|---|---|---|
+| GET | `/` | No | Health check – confirms the API is running |
 | POST | `/register` | No | Create a new user account |
 | POST | `/login` | No | Authenticate and receive an access + refresh token pair |
 | POST | `/refresh` | No | Exchange a valid refresh token for a new access token |
