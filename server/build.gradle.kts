@@ -31,6 +31,9 @@ dependencies {
     implementation(ktorLibs.server.auth.jwt)
     implementation(libs.java.jwt)
     implementation(libs.bcrypt)
+    implementation(ktorLibs.server.rateLimit)
+    implementation(libs.exposed.java.time)
+    implementation(libs.sendgrid)
 
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)

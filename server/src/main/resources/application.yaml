@@ -5,4 +5,5 @@ ktor:
     modules:
       - com.andrii.SerializationKt.configureSerialization
       - com.andrii.RoutingKt.configureAuthentication
+      - com.andrii.RoutingKt.configureRateLimiting
       - com.andrii.RoutingKt.configureRouting
