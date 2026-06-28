@@ -36,6 +36,7 @@ It manages personal expenses for multiple users, where each user can only see an
 | Containerization | Docker (multi-stage build) |
 | Cloud hosting | Azure App Service + Azure Database for PostgreSQL + Azure Container Registry |
 | Monitoring | Azure Application Insights |
+| CI | GitHub Actions |
 | Build tool | Gradle (Kotlin DSL) with Shadow plugin |
 
 ## Architecture
@@ -82,6 +83,7 @@ PostgreSQL (Azure Database for PostgreSQL Flexible Server)
 - Containerized with a multi-stage Docker build
 - Deployed live on Azure (App Service, Container Registry, managed PostgreSQL)
 - Application Insights integration for live request and performance monitoring
+- Continuous integration via GitHub Actions – tests run automatically on every push and pull request
 - Automated test suite covering registration, login, rate limiting, and token refresh
 
 ## API Endpoints
@@ -231,8 +233,7 @@ docker buildx build --platform linux/amd64 -t <registry>/expense-tracker-api:lat
 ## Known limitations / future improvements
 
 - No email verification on registration – any email address can be used without confirming ownership
-- No CI pipeline yet (tests are run manually before each commit)
-- Test suite requires a live local PostgreSQL container rather than mocking the database layer
+- Test suite requires a live PostgreSQL container (locally or in CI) rather than mocking the database layer
 
 ## Author
 
