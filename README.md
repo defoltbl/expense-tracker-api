@@ -71,6 +71,12 @@ PostgreSQL (Azure Database for PostgreSQL Flexible Server)
 3. If the account exists, a single-use, time-limited reset token is generated and emailed to the user's address via SendGrid
 4. Client submits the token and a new password (`POST /reset-password`) → the password is updated and the token is invalidated immediately, win or lose
 
+**Email verification flow:**
+1. On registration, the user is created with a `verified` flag set to false, and a single-use, time-limited verification token is emailed to them via SendGrid
+2. Registration still succeeds and the user can log in – verification is tracked rather than enforced, so an unverified user is never locked out
+3. Client submits the token (`POST /verify-email`) → the user's `verified` flag is set to true and the token is invalidated immediately
+4. The `verified` flag is carried on the user record, so specific actions can be gated to verified users in the future
+
 ## Features
 
 - Full CRUD for expenses (`Create`, `Read`, `Update`, `Delete`)
@@ -78,13 +84,14 @@ PostgreSQL (Azure Database for PostgreSQL Flexible Server)
 - Stateless JWT authentication with short-lived access tokens and long-lived refresh tokens
 - Per-user data isolation – users can only access their own expenses, enforced server-side
 - Self-service password reset via emailed, single-use, expiring tokens (SendGrid)
+- Email verification on registration via emailed, single-use, expiring tokens (SendGrid)
 - Rate limiting on authentication endpoints to slow down brute-force attempts
 - Real PostgreSQL persistence (not in-memory)
 - Containerized with a multi-stage Docker build
 - Deployed live on Azure (App Service, Container Registry, managed PostgreSQL)
 - Application Insights integration for live request and performance monitoring
 - Continuous integration via GitHub Actions – tests run automatically on every push and pull request
-- Automated test suite covering registration, login, rate limiting, and token refresh
+- Automated test suite covering registration, login, rate limiting, token refresh, and email verification
 
 ## API Endpoints
 
@@ -96,6 +103,7 @@ PostgreSQL (Azure Database for PostgreSQL Flexible Server)
 | POST | `/refresh` | No | Exchange a valid refresh token for a new access token |
 | POST | `/forgot-password` | No | Request a password reset email |
 | POST | `/reset-password` | No | Reset a password using a valid reset token |
+| POST | `/verify-email` | No | Verify a user's email using a valid verification token |
 | GET | `/expenses` | Yes | List the authenticated user's expenses |
 | POST | `/expenses` | Yes | Create a new expense |
 | GET | `/expenses/{id}` | Yes | Get a single expense by ID |
@@ -165,9 +173,9 @@ Building and deploying this project surfaced several real issues that aren't obv
 **Fix:** Explicitly overrode the Shadow JAR's manifest:
 ```kotlin
 tasks.shadowJar {
-    manifest {
-        attributes["Main-Class"] = "com.andrii.MainKt"
-    }
+   manifest {
+      attributes["Main-Class"] = "com.andrii.MainKt"
+   }
 }
 ```
 
@@ -232,7 +240,6 @@ docker buildx build --platform linux/amd64 -t <registry>/expense-tracker-api:lat
 
 ## Known limitations / future improvements
 
-- No email verification on registration – any email address can be used without confirming ownership
 - Test suite requires a live PostgreSQL container (locally or in CI) rather than mocking the database layer
 
 ## Author

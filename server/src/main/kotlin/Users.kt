@@ -2,10 +2,9 @@ package com.andrii
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
-data class User(val id: Int, val username: String, val email: String, val passwordHash: String)
+data class User(val id: Int, val username: String, val email: String, val passwordHash: String, val verified: Boolean)
 
 @kotlinx.serialization.Serializable
 data class LoginRequest(val username: String, val password: String)
@@ -26,6 +25,9 @@ data class ForgotPasswordRequest(val username: String)
 @kotlinx.serialization.Serializable
 data class ResetPasswordRequest(val resetToken: String, val newPassword: String)
 
+@kotlinx.serialization.Serializable
+data class VerifyEmailRequest(val token: String)
+
 object UserRepository {
 
     fun findByUsername(username: String): User? {
@@ -36,7 +38,8 @@ object UserRepository {
                         id = it[UsersTable.id],
                         username = it[UsersTable.username],
                         email = it[UsersTable.email],
-                        passwordHash = it[UsersTable.passwordHash]
+                        passwordHash = it[UsersTable.passwordHash],
+                        verified = it[UsersTable.verified]
                     )
                 }.singleOrNull()
         }
@@ -57,7 +60,7 @@ object UserRepository {
             } get UsersTable.id
         }
 
-        return User(id = insertedId, username = username, email = email, passwordHash = hashedPassword)
+        return User(id = insertedId, username = username, email = email, passwordHash = hashedPassword, verified = false)
     }
 
     fun hashPassword(plainPassword: String): String {

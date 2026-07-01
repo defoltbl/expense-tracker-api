@@ -5,6 +5,8 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import kotlin.test.*
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.transaction
 
 class ServerTest {
 
@@ -234,5 +236,86 @@ class ServerTest {
         }
 
         assertEquals(HttpStatusCode.TooManyRequests, sixthResponse.status)
+    }
+
+    @Test
+    fun `verifying with an invalid token returns 401`() = testApplication {
+        application {
+            DatabaseFactory.init()
+            configureSerialization()
+            configureAuthentication()
+            configureRateLimiting()
+            configureRouting()
+        }
+
+        val response = client.post("/verify-email") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"token": "totally-invalid-verification-token"}""")
+        }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun `newly registered user is unverified by default`() = testApplication {
+        application {
+            DatabaseFactory.init()
+            configureSerialization()
+            configureAuthentication()
+            configureRateLimiting()
+            configureRouting()
+        }
+
+        val username = uniqueUsername()
+        client.post("/register") {
+            contentType(ContentType.Application.Json)
+            setBody(registerBody(username))
+        }
+
+        val user = UserRepository.findByUsername(username)
+        assertNotNull(user, "User should exist after registration")
+        assertFalse(user.verified, "A newly registered user should start unverified")
+    }
+
+    @Test
+    fun `verifying with a valid token marks the user verified`() = testApplication {
+        application {
+            DatabaseFactory.init()
+            configureSerialization()
+            configureAuthentication()
+            configureRateLimiting()
+            configureRouting()
+        }
+
+        val username = uniqueUsername()
+        client.post("/register") {
+            contentType(ContentType.Application.Json)
+            setBody(registerBody(username))
+        }
+
+        // The verification token isn't returned by the API (only emailed),
+        // so read it directly from the database for this test.
+        val user = UserRepository.findByUsername(username)
+        assertNotNull(user, "User should exist after registration")
+
+        val token = transaction {
+            EmailVerificationTokensTable.selectAll()
+                .where { EmailVerificationTokensTable.userId eq user.id }
+                .map { it[EmailVerificationTokensTable.token] }
+                .singleOrNull()
+        }
+        assertNotNull(token, "A verification token should have been created at registration")
+
+        val response = client.post("/verify-email") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"token": "$token"}""")
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+
+        // Confirm the flag actually flipped
+        val verifiedUser = UserRepository.findByUsername(username)
+        assertNotNull(verifiedUser)
+        assertTrue(verifiedUser.verified, "User should be verified after hitting /verify-email")
     }
 }

@@ -42,4 +42,32 @@ object EmailService {
             println("Failed to send email: ${ex.message}")
         }
     }
+
+    fun sendVerificationEmail(toEmail: String, verificationToken: String) {
+        val apiKey = System.getenv("SENDGRID_API_KEY")
+        if (apiKey.isNullOrBlank()) {
+            println("WARNING: SENDGRID_API_KEY not set, skipping email send. Verification token: $verificationToken")
+            return
+        }
+
+        val fromEmail = System.getenv("SENDGRID_FROM_EMAIL") ?: "t67111658@gmail.com"
+
+        val from = Email(fromEmail)
+        val subject = "Verify your Expense Tracker email"
+        val to = Email(toEmail)
+        val bodyText = "Welcome! Please verify your email address. Your verification token is: " +
+                "$verificationToken Use this token with the /verify-email endpoint within 24 hours. " +
+                "If you didn't create this account, you can safely ignore this email."
+        val content = Content("text/plain", bodyText)
+        val mail = Mail(from, subject, to, content)
+
+        val sg = SendGrid(apiKey)
+        val request = Request()
+        request.method = Method.POST
+        request.endpoint = "mail/send"
+        request.body = mail.build()
+
+        val response = sg.api(request)
+        println("SendGrid response: ${response.statusCode}")
+    }
 }

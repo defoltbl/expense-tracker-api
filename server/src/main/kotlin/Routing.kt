@@ -116,7 +116,8 @@ fun Application.configureRouting() {
                                 id = it[UsersTable.id],
                                 username = it[UsersTable.username],
                                 email = it[UsersTable.email],
-                                passwordHash = it[UsersTable.passwordHash]
+                                passwordHash = it[UsersTable.passwordHash],
+                                verified = it[UsersTable.verified]
                             )
                         }.singleOrNull()
                 }
@@ -145,7 +146,55 @@ fun Application.configureRouting() {
                     return@post
                 }
 
+                val verificationToken = JwtConfig.generateRefreshToken()
+                val expiresAt = LocalDateTime.now().plusHours(24) // verification links can live longer than password resets
+
+                transaction {
+                    EmailVerificationTokensTable.insert {
+                        it[userId] = newUser.id
+                        it[token] = verificationToken
+                        it[EmailVerificationTokensTable.expiresAt] = expiresAt
+                    }
+                }
+
+                EmailService.sendVerificationEmail(newUser.email, verificationToken)
+
                 call.respond(HttpStatusCode.Created, "User registered successfully")
+            }
+
+            post("/verify-email") {
+                val request = call.receive<VerifyEmailRequest>()
+
+                val storedToken = transaction {
+                    EmailVerificationTokensTable.selectAll()
+                        .where { EmailVerificationTokensTable.token eq request.token }
+                        .singleOrNull()
+                }
+
+                if (storedToken == null) {
+                    call.respond(HttpStatusCode.Unauthorized, "Invalid or expired verification token")
+                    return@post
+                }
+
+                val tokenExpiresAt = storedToken[EmailVerificationTokensTable.expiresAt]
+                if (tokenExpiresAt.isBefore(LocalDateTime.now())) {
+                    transaction {
+                        EmailVerificationTokensTable.deleteWhere { EmailVerificationTokensTable.token eq request.token }
+                    }
+                    call.respond(HttpStatusCode.Unauthorized, "Invalid or expired verification token")
+                    return@post
+                }
+
+                val targetUserId = storedToken[EmailVerificationTokensTable.userId]
+
+                transaction {
+                    UsersTable.update({ UsersTable.id eq targetUserId }) {
+                        it[verified] = true
+                    }
+                    EmailVerificationTokensTable.deleteWhere { EmailVerificationTokensTable.token eq request.token }
+                }
+
+                call.respond(HttpStatusCode.OK, "Email verified successfully")
             }
 
             post("/forgot-password") {

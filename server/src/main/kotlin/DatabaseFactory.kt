@@ -26,7 +26,7 @@ object DatabaseFactory {
         Database.connect(dataSource)
 
         transaction {
-            SchemaUtils.create(ExpensesTable, UsersTable, RefreshTokensTable, PasswordResetTokensTable)
+            SchemaUtils.create(ExpensesTable, UsersTable, RefreshTokensTable, PasswordResetTokensTable, EmailVerificationTokensTable )
         }
     }
 }
