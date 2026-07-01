@@ -238,9 +238,9 @@ docker buildx build --platform linux/amd64 -t <registry>/expense-tracker-api:lat
 
 **Fix:** Regenerated a fresh SendGrid API key and pasted it cleanly into the environment variable, with nothing before or after it. A good reminder that "the call succeeded" and "the call did what I wanted" are different claims, especially for endpoints designed to look the same on success and failure.
 
-## Known limitations / future improvements
+## Design notes / possible future improvements
 
-- Test suite requires a live PostgreSQL container (locally or in CI) rather than mocking the database layer
+- Tests run as integration tests against a real PostgreSQL instance (via a CI service container) rather than mocking the database – a deliberate choice to test against the real engine, at the cost of requiring Docker to run tests locally
 
 ## Author
 
