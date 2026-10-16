@@ -12,6 +12,8 @@ A REST API for tracking personal expenses, built with Kotlin and Ktor, featuring
 
 > Note: the live demo runs on a paid Azure tier and may be stopped between active development periods to manage cloud costs. If the link is unresponsive, the project can be run locally – see [Running locally](#running-locally) below.
 
+**Case study:** [andrii-maksymenko.com/projects/expense-tracker-api](https://andrii-maksymenko.com/projects/expense-tracker-api/) – the problem, the key decisions and diagrams of how it works.
+
 ---
 
 ## Overview
@@ -58,6 +60,8 @@ Exposed (SQL DSL)
 PostgreSQL (Azure Database for PostgreSQL Flexible Server)
 ```
 
+![From a request to the user's own rows](docs/api_request.png)
+
 **Auth flow:**
 1. Client registers (`POST /register`) → password is hashed with BCrypt before storage
 2. Client logs in (`POST /login`) → password is verified against the stored hash → a short-lived access token and a longer-lived refresh token are issued
@@ -76,6 +80,10 @@ PostgreSQL (Azure Database for PostgreSQL Flexible Server)
 2. Registration still succeeds and the user can log in – verification is tracked rather than enforced, so an unverified user is never locked out
 3. Client submits the token (`POST /verify-email`) → the user's `verified` flag is set to true and the token is invalidated immediately
 4. The `verified` flag is carried on the user record, so specific actions can be gated to verified users in the future
+
+**Build and deployment:**
+
+![Tested on every push, shipped as a container to Azure](docs/api_deploy.png)
 
 ## Features
 
